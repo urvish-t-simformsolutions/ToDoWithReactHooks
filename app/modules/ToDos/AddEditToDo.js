@@ -6,14 +6,16 @@ import {CustomButton, CustomInput} from '../../components';
 import {Strings} from '../../constants';
 import {connect} from 'react-redux';
 import {addTodo, editTodo} from '../../redux/actions';
+import {useRoute} from '@react-navigation/native';
 
 const AddEditToDo = ({
   addTodoItem,
   editTodoItem,
   todoItems,
   navigation,
-  route,
+  // route,
 }) => {
+  const route = useRoute();
   const {editMode, todoValue} = route.params;
   const [todo, setTodo] = useState(todoValue ? todoValue : '');
   const [error, setError] = useState('');

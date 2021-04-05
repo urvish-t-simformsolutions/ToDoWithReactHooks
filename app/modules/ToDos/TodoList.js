@@ -1,11 +1,13 @@
 import React, {useEffect} from 'react';
-import {View, FlatList, Text} from 'react-native';
-import {ApplicationStyles} from '../../theme';
+import {View, FlatList, Text, useColorScheme} from 'react-native';
+import {ApplicationStyles, DarkTheme, LightTheme} from '../../theme';
 import styles from './Styles/ToDosStyles';
 import {CustomButton} from '../../components';
 import {Strings} from '../../constants';
-import {connect} from 'react-redux';
+import {connect, useSelector} from 'react-redux';
 import {getTodos, deleteTodo} from '../../redux/actions';
+import {useNavigation} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 
 const RenderButton = ({navigation}) => (
   <CustomButton
@@ -16,7 +18,14 @@ const RenderButton = ({navigation}) => (
   />
 );
 
-const RenderItem = ({item, todoItems, navigation, deleteTodoItem}) => {
+const RenderItem = ({
+  item,
+  todoItems,
+  // navigation,
+  deleteTodoItem,
+}) => {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   return (
     <View style={styles.row}>
       <Text style={styles.rowText}>{item}</Text>
@@ -36,7 +45,7 @@ const RenderItem = ({item, todoItems, navigation, deleteTodoItem}) => {
           theme={Strings.secondary}
           title={Strings.delete}
           containerStyle={styles.deleteButton}
-          onClick={() => deleteTodoItem(item, todoItems)}
+          onClick={() => dispatch(deleteTodo(item, todoItems))}
         />
       </View>
     </View>
@@ -44,19 +53,27 @@ const RenderItem = ({item, todoItems, navigation, deleteTodoItem}) => {
 };
 
 const TodoList = ({navigation, getTodoItems, deleteTodoItem, todoItems}) => {
+  const dispatch = useDispatch();
+  const {todos} = useSelector((state) => state.todos);
+  const colorScheme = useColorScheme();
+
+  const appStyles =
+    colorScheme === 'dark'
+      ? ApplicationStyles(DarkTheme)
+      : ApplicationStyles(LightTheme);
   useEffect(() => {
-    getTodoItems();
-  }, [getTodoItems]);
+    dispatch(getTodos);
+  }, [dispatch]);
 
   return (
-    <View style={ApplicationStyles.container}>
+    <View style={appStyles.container}>
       <FlatList
-        data={todoItems}
+        data={todos}
         renderItem={({item}) => (
           <RenderItem
             item={item}
             todoItems={todoItems}
-            navigation={navigation}
+            //   navigation={navigation}
             deleteTodoItem={deleteTodoItem}
           />
         )}
@@ -67,22 +84,22 @@ const TodoList = ({navigation, getTodoItems, deleteTodoItem, todoItems}) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  console.log('state', state);
-  return {
-    todoItems: state.todos.todos,
-  };
-};
+// const mapStateToProps = (state) => {
+//   console.log('state', state);
+//   return {
+//     todoItems: state.todos.todos,
+//   };
+// };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getTodoItems: () => {
-      dispatch(getTodos);
-    },
-    deleteTodoItem: (item, todoItems) => {
-      dispatch(deleteTodo(item, todoItems));
-    },
-  };
-};
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     // getTodoItems: () => {
+//     //   dispatch(getTodos);
+//     // },
+//     deleteTodoItem: (item, todoItems) => {
+//       dispatch(deleteTodo(item, todoItems));
+//     },
+//   };
+// };
 
-export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
+export default TodoList;
